@@ -117,7 +117,7 @@
     zh: {
       "doc.title": "nonoor · 一个人的 App 作坊",
       "nav.works": "作品", "nav.craft": "手艺", "nav.letter": "来信", "nav.contact": "联系",
-      "theme.night": "夜", "theme.day": "昼",
+      "theme.night": "夜", "theme.day": "昼", "cursor.view": "放大", "cursor.pause": "暂停",
       "hero.eyebrow": "独立 iOS 开发 · nonoor 作坊",
       "hero.title": "一个人，<br>做一些<em>安静</em>的 App。",
       "hero.lede": "写一封要等很久才能拆的信，敲一下口袋里的木鱼，竖着读一本古书，给胶片相机测一次光，记下谁的生日、谁的礼金。我把日子里这些细小的仪式，做成手机里的工具。",
@@ -142,7 +142,7 @@
     en: {
       "doc.title": "nonoor — a one-person app workshop",
       "nav.works": "Works", "nav.craft": "Craft", "nav.letter": "Letter", "nav.contact": "Contact",
-      "theme.night": "☾", "theme.day": "☀",
+      "theme.night": "☾", "theme.day": "☀", "cursor.view": "View", "cursor.pause": "Paused",
       "hero.eyebrow": "Independent iOS apps · nonoor workshop",
       "hero.title": "One person.<br>A handful of <em>quiet</em> apps.",
       "hero.lede": "A letter you can't open for years. A wooden fish in your pocket. A classic read top to bottom. A light reading for a film camera. A note of whose birthday, and whose gift. I turn the small rituals of everyday life into tools for your phone.",
@@ -174,6 +174,10 @@
     if (html != null) n.innerHTML = html;
     return n;
   }
+
+  var root = document.documentElement;
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
   var lang = (function () {
     var saved = localStorage.getItem("lang");
@@ -212,18 +216,62 @@
         "</div>" +
         '<div class="spread__stage">' + shots + "</div>";
       wrap.appendChild(art);
-      if (shakeIO) shakeIO.observe(art);
+      if (stageIO) { stageIO.observe(art); tintIO.observe(art); }
+      else art.classList.add("is-staged");
     });
   }
 
-  var shakeIO = "IntersectionObserver" in window
+  var stageIO = "IntersectionObserver" in window
     ? new IntersectionObserver(function (entries) {
         entries.forEach(function (e) {
-          if (e.intersectionRatio >= 0.35) e.target.classList.add("is-shaking");
-          else if (!e.isIntersecting) e.target.classList.remove("is-shaking");
+          if (e.intersectionRatio >= 0.2) e.target.classList.add("is-staged");
+          else if (!e.isIntersecting) e.target.classList.remove("is-staged");
         });
-      }, { threshold: [0, 0.35] })
+      }, { threshold: [0, 0.2] })
     : null;
+
+  var tinted = null;
+  var tintIO = "IntersectionObserver" in window
+    ? new IntersectionObserver(function (entries) {
+        entries.sort(function (a, b) { return a.isIntersecting - b.isIntersecting; }).forEach(function (e) {
+          if (e.isIntersecting) {
+            tinted = e.target;
+            root.style.setProperty("--tint-c", e.target.style.getPropertyValue("--accent"));
+            root.dataset.tint = "";
+          } else if (tinted === e.target) {
+            tinted = null;
+            delete root.dataset.tint;
+          }
+        });
+      }, { rootMargin: "-50% 0px -50% 0px" })
+    : null;
+
+  /* hero title: each glyph (CJK) or word (Latin) bleeds in like ink */
+  function inkTitle() {
+    var h = document.querySelector(".hero__title");
+    var n = 0, base = 150, step = lang === "zh" ? 70 : 55;
+    (function walk(node) {
+      Array.prototype.slice.call(node.childNodes).forEach(function (c) {
+        if (c.nodeType === 3) {
+          var frag = document.createDocumentFragment();
+          c.textContent.split(/(\s+)/).forEach(function (tok) {
+            if (!tok) return;
+            if (/^\s+$/.test(tok)) { frag.appendChild(document.createTextNode(tok)); return; }
+            (/[\u3000-\u9fff\uff00-\uffef]/.test(tok) ? Array.from(tok) : [tok]).forEach(function (u) {
+              var sp = el("span", "ink");
+              sp.textContent = u;
+              sp.style.setProperty("--i", base + n++ * step + "ms");
+              frag.appendChild(sp);
+            });
+          });
+          c.replaceWith(frag);
+        } else if (c.nodeType === 1 && c.tagName !== "BR") {
+          walk(c);
+        }
+      });
+    })(h);
+    h.style.setProperty("--brush-d", base + n * step + 200 + "ms");
+  }
 
   function renderStrip() {
     var strip = document.getElementById("strip");
@@ -286,6 +334,7 @@
       if (v != null) n.innerHTML = v;
     });
     document.getElementById("langToggle").textContent = lang === "zh" ? "EN" : "中";
+    inkTitle();
     renderSpreads();
     renderStrip();
     renderRules();
@@ -308,11 +357,27 @@
     label.textContent = T[lang][label.dataset.i18n];
   }
 
-  document.getElementById("themeToggle").addEventListener("click", function () {
+  document.getElementById("themeToggle").addEventListener("click", function (ev) {
     var next = isDark() ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
-    localStorage.setItem("theme", next);
-    syncThemeLabel();
+    function apply() {
+      root.dataset.theme = next;
+      localStorage.setItem("theme", next);
+      syncThemeLabel();
+    }
+    if (!document.startViewTransition || reduced) { apply(); return; }
+
+    var r = ev.currentTarget.getBoundingClientRect();
+    var x = r.left + r.width / 2, y = r.top + r.height / 2;
+    var radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    root.classList.add("no-trans");
+    var vt = document.startViewTransition(apply);
+    vt.ready.then(function () {
+      root.animate(
+        { clipPath: ["circle(0px at " + x + "px " + y + "px)", "circle(" + radius + "px at " + x + "px " + y + "px)"] },
+        { duration: 950, easing: "cubic-bezier(.65, 0, .35, 1)", pseudoElement: "::view-transition-new(root)" }
+      );
+    });
+    vt.finished.then(function () { root.classList.remove("no-trans"); });
   });
 
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", syncThemeLabel);
@@ -455,22 +520,205 @@
     });
   })();
 
-  /* ---------------- screenshot lightbox ---------------- */
+  /* ---------------- screenshot lightbox (expands from the phone it was opened on) ---------------- */
 
   (function () {
     var box = document.getElementById("lightbox");
-    var img = box.querySelector("img");
-    function close() { box.hidden = true; img.removeAttribute("src"); document.body.style.overflow = ""; }
-    document.getElementById("spreads").addEventListener("click", function (e) {
-      var phone = e.target.closest(".phone");
-      if (!phone) return;
+    var img = box.querySelector(".lightbox__img");
+    var count = box.querySelector(".lightbox__count");
+    var list = [], idx = 0, busy = false, swiped = false, touchX = 0;
+
+    function toRect(r) {
+      var f = img.getBoundingClientRect();
+      return "translate(" + (r.left - f.left) + "px," + (r.top - f.top) + "px) scale(" + r.width / f.width + "," + r.height / f.height + ")";
+    }
+
+    function updateCount() { count.textContent = idx + 1 + " / " + list.length; }
+
+    function open(phone) {
+      list = Array.prototype.slice.call(phone.parentNode.querySelectorAll(".phone"));
+      idx = list.indexOf(phone);
+      updateCount();
       img.src = phone.dataset.src;
+      box.classList.add("is-dim");
       box.hidden = false;
       document.body.style.overflow = "hidden";
+      var from = phone.getBoundingClientRect();
+      (img.decode ? img.decode() : Promise.resolve()).catch(function () {}).then(function () {
+        phone.style.visibility = "hidden";
+        requestAnimationFrame(function () {
+          box.classList.remove("is-dim");
+          if (!reduced) img.animate([{ transform: toRect(from) }, { transform: "none" }], { duration: 620, easing: "cubic-bezier(.2, .85, .25, 1)" });
+        });
+      });
+    }
+
+    function close() {
+      if (box.hidden || busy) return;
+      busy = true;
+      box.classList.add("is-dim");
+      function done() {
+        list.forEach(function (p) { p.style.visibility = ""; });
+        box.hidden = true;
+        img.removeAttribute("src");
+        document.body.style.overflow = "";
+        busy = false;
+      }
+      if (reduced) { done(); return; }
+      var anim = img.animate([{ transform: "none" }, { transform: toRect(list[idx].getBoundingClientRect()) }],
+        { duration: 460, easing: "cubic-bezier(.4, 0, .2, 1)", fill: "forwards" });
+      anim.onfinish = function () { done(); anim.cancel(); };
+    }
+
+    function go(dir) {
+      if (busy || list.length < 2) return;
+      busy = true;
+      list[idx].style.visibility = "";
+      idx = (idx + dir + list.length) % list.length;
+      list[idx].style.visibility = "hidden";
+      updateCount();
+      var out = img.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateX(" + -dir * 48 + "px)" }],
+        { duration: 170, easing: "ease-in", fill: "forwards" });
+      out.onfinish = function () {
+        img.src = list[idx].dataset.src;
+        out.cancel();
+        img.animate([{ opacity: 0, transform: "translateX(" + dir * 48 + "px)" }, { opacity: 1, transform: "none" }],
+          { duration: 300, easing: "cubic-bezier(.2, .8, .2, 1)" }).onfinish = function () { busy = false; };
+      };
+    }
+
+    document.getElementById("spreads").addEventListener("click", function (e) {
+      var phone = e.target.closest(".phone");
+      if (phone) open(phone);
     });
-    box.addEventListener("click", close);
-    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !box.hidden) close(); });
+    box.addEventListener("click", function (e) {
+      if (swiped) { swiped = false; return; }
+      if (e.target.closest(".lightbox__nav--prev")) return go(-1);
+      if (e.target.closest(".lightbox__nav--next")) return go(1);
+      close();
+    });
+    box.addEventListener("touchstart", function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+    box.addEventListener("touchend", function (e) {
+      var dx = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(dx) > 50) { swiped = true; go(dx < 0 ? 1 : -1); }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (box.hidden) return;
+      if (e.key === "Escape") close();
+      else if (e.key === "ArrowLeft") go(-1);
+      else if (e.key === "ArrowRight") go(1);
+    });
   })();
+
+  /* ---------------- reading progress + current volume ---------------- */
+
+  (function () {
+    var bar = document.getElementById("progress");
+    var vol = document.getElementById("mastVol");
+    function onScroll() {
+      var max = root.scrollHeight - innerHeight;
+      bar.style.setProperty("--p", max > 0 ? Math.min(1, scrollY / max).toFixed(4) : 0);
+    }
+    addEventListener("scroll", onScroll, { passive: true });
+    addEventListener("resize", onScroll);
+    onScroll();
+
+    if (!("IntersectionObserver" in window)) return;
+    var current = null;
+    var sectionIO = new IntersectionObserver(function (entries) {
+      entries.sort(function (a, b) { return a.isIntersecting - b.isIntersecting; }).forEach(function (e) {
+        if (e.isIntersecting) {
+          current = e.target;
+          vol.innerHTML = "<b>" + e.target.querySelector(".vol").textContent + "</b>" + e.target.querySelector("h2").textContent;
+          vol.classList.add("is-on");
+        } else if (current === e.target) {
+          current = null;
+          vol.classList.remove("is-on");
+        }
+      });
+    }, { rootMargin: "-45% 0px -55% 0px" });
+    document.querySelectorAll("#works, .section--strip, #craft, #letter").forEach(function (sec) { sectionIO.observe(sec); });
+  })();
+
+  /* ---------------- pointer-driven effects (desktop only) ---------------- */
+
+  if (finePointer && !reduced) {
+    /* phones lean toward the cursor, glare follows it */
+    (function () {
+      var stage = null;
+      function reset(s) {
+        s.classList.remove("is-tilting");
+        s.style.setProperty("--tilt", "0 1 0 0deg");
+      }
+      document.addEventListener("pointermove", function (e) {
+        var s = e.target.closest ? e.target.closest(".spread__stage") : null;
+        if (stage && stage !== s) reset(stage);
+        stage = s;
+        if (!s) return;
+        var r = s.getBoundingClientRect();
+        var x = (e.clientX - r.left) / r.width * 2 - 1, y = (e.clientY - r.top) / r.height * 2 - 1;
+        var mag = Math.hypot(x, y);
+        s.classList.add("is-tilting");
+        s.style.setProperty("--tilt", mag < 0.02 ? "0 1 0 0deg" : (-y).toFixed(3) + " " + x.toFixed(3) + " 0 " + (Math.min(mag, 1.2) * 7).toFixed(2) + "deg");
+        s.style.setProperty("--gx", ((x + 1) * 50).toFixed(1) + "%");
+        s.style.setProperty("--gy", ((y + 1) * 50).toFixed(1) + "%");
+      }, { passive: true });
+      document.addEventListener("mouseleave", function () { if (stage) { reset(stage); stage = null; } });
+    })();
+
+    /* ink-dot cursor */
+    (function () {
+      var dot = el("div", "cursor-dot"), ring = el("div", "cursor-ring", "<span></span>");
+      var label = ring.firstChild;
+      document.body.appendChild(dot);
+      document.body.appendChild(ring);
+      root.classList.add("has-cursor");
+      var mx = -100, my = -100, rx = mx, ry = my;
+
+      addEventListener("pointermove", function (e) {
+        if (e.pointerType !== "mouse") return;
+        mx = e.clientX; my = e.clientY;
+        root.classList.add("cursor-on");
+        dot.style.transform = "translate(" + mx + "px," + my + "px)";
+        var t = e.target;
+        var view = t.closest(".phone"), strip = !view && t.closest(".strip");
+        var link = !view && !strip && t.closest("a, button");
+        root.classList.toggle("cursor--view", !!(view || strip));
+        root.classList.toggle("cursor--link", !!link);
+        if (view || strip) label.textContent = T[lang][view ? "cursor.view" : "cursor.pause"];
+      }, { passive: true });
+      document.addEventListener("mouseleave", function () { root.classList.remove("cursor-on"); });
+      addEventListener("pointerdown", function () { root.classList.add("cursor--down"); });
+      addEventListener("pointerup", function () { root.classList.remove("cursor--down"); });
+
+      (function loop() {
+        rx += (mx - rx) * 0.2;
+        ry += (my - ry) * 0.2;
+        ring.style.transform = "translate(" + rx.toFixed(2) + "px," + ry.toFixed(2) + "px)";
+        requestAnimationFrame(loop);
+      })();
+    })();
+
+    /* buttons lean toward the cursor */
+    (function () {
+      var cur = null;
+      function release(b) {
+        b.classList.remove("is-magnet");
+        b.style.removeProperty("--mx");
+        b.style.removeProperty("--my");
+      }
+      document.addEventListener("pointermove", function (e) {
+        var b = e.target.closest ? e.target.closest(".btn, .toggle") : null;
+        if (cur && cur !== b) release(cur);
+        cur = b;
+        if (!b) return;
+        var r = b.getBoundingClientRect();
+        b.classList.add("is-magnet");
+        b.style.setProperty("--mx", ((e.clientX - r.left - r.width / 2) * 0.28).toFixed(1) + "px");
+        b.style.setProperty("--my", ((e.clientY - r.top - r.height / 2) * 0.4).toFixed(1) + "px");
+      }, { passive: true });
+    })();
+  }
 
   applyLang();
 })();

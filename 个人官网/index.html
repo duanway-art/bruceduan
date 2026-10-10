@@ -28,6 +28,7 @@
       <span class="seal seal--sm">坊</span>
       <span class="brand__name">nonoor</span>
     </a>
+    <span class="masthead__vol" id="mastVol" aria-hidden="true"></span>
     <nav class="nav">
       <a href="#works" data-i18n="nav.works">作品</a>
       <a href="#craft" data-i18n="nav.craft">手艺</a>
@@ -38,6 +39,7 @@
       <button class="toggle" id="langToggle" type="button" aria-label="Switch language">EN</button>
       <button class="toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"><span data-i18n="theme.night">夜</span></button>
     </div>
+    <span class="progress" id="progress" aria-hidden="true"></span>
   </header>
 
   <main id="top">
@@ -47,7 +49,7 @@
 
       <div class="hero__main">
         <p class="eyebrow reveal" data-i18n="hero.eyebrow">独立 iOS 开发 · nonoor 作坊</p>
-        <h1 class="hero__title reveal" data-i18n-html="hero.title">一个人，<br>做一些<em>安静</em>的 App。</h1>
+        <h1 class="hero__title" data-i18n-html="hero.title">一个人，<br>做一些<em>安静</em>的 App。</h1>
         <p class="hero__lede reveal" data-i18n="hero.lede">写一封要等很久才能拆的信，敲一下口袋里的木鱼，竖着读一本古书，给胶片相机测一次光，记下谁的生日、谁的礼金。我把日子里这些细小的仪式，做成手机里的工具。</p>
         <div class="hero__cta reveal">
           <a class="btn btn--ink" href="#works" data-i18n="hero.cta">翻阅作品</a>
@@ -149,7 +151,10 @@
 
   <div class="lightbox" id="lightbox" hidden>
     <button class="lightbox__close" type="button" aria-label="Close">×</button>
+    <button class="lightbox__nav lightbox__nav--prev" type="button" aria-label="Previous">‹</button>
     <img class="lightbox__img" alt="">
+    <button class="lightbox__nav lightbox__nav--next" type="button" aria-label="Next">›</button>
+    <p class="lightbox__count" aria-live="polite"></p>
   </div>
 
   <script src="main.js"></script>
