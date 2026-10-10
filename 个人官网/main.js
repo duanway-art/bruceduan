@@ -117,7 +117,7 @@
     zh: {
       "doc.title": "nonoor · 一个人的 App 作坊",
       "nav.works": "作品", "nav.craft": "手艺", "nav.letter": "来信", "nav.contact": "联系",
-      "theme.night": "夜", "theme.day": "昼", "cursor.view": "放大", "cursor.pause": "暂停",
+      "theme.night": "夜", "theme.day": "昼",
       "hero.eyebrow": "独立 iOS 开发 · nonoor 作坊",
       "hero.title": "一个人，<br>做一些<em>安静</em>的 App。",
       "hero.lede": "写一封要等很久才能拆的信，敲一下口袋里的木鱼，竖着读一本古书，给胶片相机测一次光，记下谁的生日、谁的礼金。我把日子里这些细小的仪式，做成手机里的工具。",
@@ -142,7 +142,7 @@
     en: {
       "doc.title": "nonoor — a one-person app workshop",
       "nav.works": "Works", "nav.craft": "Craft", "nav.letter": "Letter", "nav.contact": "Contact",
-      "theme.night": "☾", "theme.day": "☀", "cursor.view": "View", "cursor.pause": "Paused",
+      "theme.night": "☾", "theme.day": "☀",
       "hero.eyebrow": "Independent iOS apps · nonoor workshop",
       "hero.title": "One person.<br>A handful of <em>quiet</em> apps.",
       "hero.lede": "A letter you can't open for years. A wooden fish in your pocket. A classic read top to bottom. A light reading for a film camera. A note of whose birthday, and whose gift. I turn the small rituals of everyday life into tools for your phone.",
@@ -664,39 +664,6 @@
         s.style.setProperty("--gy", ((y + 1) * 50).toFixed(1) + "%");
       }, { passive: true });
       document.addEventListener("mouseleave", function () { if (stage) { reset(stage); stage = null; } });
-    })();
-
-    /* ink-dot cursor */
-    (function () {
-      var dot = el("div", "cursor-dot"), ring = el("div", "cursor-ring", "<span></span>");
-      var label = ring.firstChild;
-      document.body.appendChild(dot);
-      document.body.appendChild(ring);
-      root.classList.add("has-cursor");
-      var mx = -100, my = -100, rx = mx, ry = my;
-
-      addEventListener("pointermove", function (e) {
-        if (e.pointerType !== "mouse") return;
-        mx = e.clientX; my = e.clientY;
-        root.classList.add("cursor-on");
-        dot.style.transform = "translate(" + mx + "px," + my + "px)";
-        var t = e.target;
-        var view = t.closest(".phone"), strip = !view && t.closest(".strip");
-        var link = !view && !strip && t.closest("a, button");
-        root.classList.toggle("cursor--view", !!(view || strip));
-        root.classList.toggle("cursor--link", !!link);
-        if (view || strip) label.textContent = T[lang][view ? "cursor.view" : "cursor.pause"];
-      }, { passive: true });
-      document.addEventListener("mouseleave", function () { root.classList.remove("cursor-on"); });
-      addEventListener("pointerdown", function () { root.classList.add("cursor--down"); });
-      addEventListener("pointerup", function () { root.classList.remove("cursor--down"); });
-
-      (function loop() {
-        rx += (mx - rx) * 0.2;
-        ry += (my - ry) * 0.2;
-        ring.style.transform = "translate(" + rx.toFixed(2) + "px," + ry.toFixed(2) + "px)";
-        requestAnimationFrame(loop);
-      })();
     })();
 
     /* buttons lean toward the cursor */
