@@ -127,7 +127,7 @@
       "stat.live": "款已上架", "stat.wip": "款即将刊行", "stat.lang": "种语言", "stat.one": "个人",
       "works.vol": "卷一", "works.title": "作品", "works.sub": "八件作品，按开工先后排列。点截图可放大。",
       "works.store": "App Store 下载", "works.site": "官网", "works.soon": "即将刊行",
-      "strip.vol": "卷二", "strip.title": "一个 App 的一卷胶片", "strip.sub": "从一个念头到下一个版本，每次都这样走一遍。", "strip.hint": "← 拖动胶片 →",
+      "strip.vol": "卷二", "strip.title": "一个 App 的一卷胶片", "strip.sub": "从一个念头到下一个版本，每次都这样走一遍。", "strip.hint": "胶片自动放映，悬停或按住可暂停",
       "craft.vol": "卷三", "craft.title": "作坊规制", "craft.sub": "六条给自己定的规矩。",
       "letter.vol": "卷四", "letter.title": "一封给你的信", "letter.sub": "学时笺的规矩：先封好，等你来拆。",
       "letter.to": "致 · 读到这里的你", "letter.open": "点击拆封",
@@ -152,7 +152,7 @@
       "stat.live": "apps live", "stat.wip": "coming soon", "stat.lang": "languages", "stat.one": "person",
       "works.vol": "Vol. I", "works.title": "The Works", "works.sub": "Eight pieces, in the order they were begun. Tap a screenshot to enlarge.",
       "works.store": "Get on the App Store", "works.site": "Website", "works.soon": "Coming soon",
-      "strip.vol": "Vol. II", "strip.title": "One roll of film per app", "strip.sub": "From a first idea to the next version — the same ten frames, every time.", "strip.hint": "← drag the film →",
+      "strip.vol": "Vol. II", "strip.title": "One roll of film per app", "strip.sub": "From a first idea to the next version — the same ten frames, every time.", "strip.hint": "The film plays on its own — hover or hold to pause",
       "craft.vol": "Vol. III", "craft.title": "Workshop Rules", "craft.sub": "Six rules I hold myself to.",
       "letter.vol": "Vol. IV", "letter.title": "A letter for you", "letter.sub": "Whenly's rule: sealed first, opened by you.",
       "letter.to": "To · whoever reads this far", "letter.open": "Break the seal",
@@ -212,18 +212,30 @@
         "</div>" +
         '<div class="spread__stage">' + shots + "</div>";
       wrap.appendChild(art);
+      if (shakeIO) shakeIO.observe(art);
     });
   }
 
+  var shakeIO = "IntersectionObserver" in window
+    ? new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.intersectionRatio >= 0.35) e.target.classList.add("is-shaking");
+          else if (!e.isIntersecting) e.target.classList.remove("is-shaking");
+        });
+      }, { threshold: [0, 0.35] })
+    : null;
+
   function renderStrip() {
     var strip = document.getElementById("strip");
+    var track = el("div", "strip__track");
+    function frames(attrs) {
+      return FRAMES[lang].map(function (f, i) {
+        return '<div class="frame"' + attrs + '><span class="frame__no">' + String(i + 1).padStart(2, "0") + "A</span><h4>" + f[0] + "</h4><p>" + f[1] + "</p></div>";
+      }).join("");
+    }
+    track.innerHTML = frames("") + frames(' aria-hidden="true"');
     strip.innerHTML = "";
-    FRAMES[lang].forEach(function (f, i) {
-      var n = String(i + 1).padStart(2, "0");
-      var fr = el("div", "frame");
-      fr.innerHTML = '<span class="frame__no">' + n + "A</span><h4>" + f[0] + "</h4><p>" + f[1] + "</p>";
-      strip.appendChild(fr);
-    });
+    strip.appendChild(track);
     var hint = document.querySelector(".strip__hint");
     if (!hint) {
       hint = el("p", "strip__hint");
@@ -411,23 +423,20 @@
     });
   })();
 
-  /* ---------------- film strip drag ---------------- */
+  /* ---------------- film strip autoplay ---------------- */
 
   (function () {
     var strip = document.getElementById("strip");
-    var down = false, startX = 0, startScroll = 0;
-    strip.addEventListener("pointerdown", function (e) {
-      if (e.pointerType !== "mouse") return;
-      down = true; startX = e.clientX; startScroll = strip.scrollLeft;
-      strip.style.scrollSnapType = "none";
-    });
-    window.addEventListener("pointermove", function (e) {
-      if (down) strip.scrollLeft = startScroll - (e.clientX - startX);
-    });
-    window.addEventListener("pointerup", function () {
-      if (!down) return;
-      down = false;
-      strip.style.scrollSnapType = "";
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (entries) {
+        strip.classList.toggle("is-playing", entries[0].isIntersecting);
+      }, { threshold: 0.2 }).observe(strip);
+    } else {
+      strip.classList.add("is-playing");
+    }
+    strip.addEventListener("touchstart", function () { strip.classList.add("is-held"); }, { passive: true });
+    ["touchend", "touchcancel"].forEach(function (type) {
+      strip.addEventListener(type, function () { strip.classList.remove("is-held"); });
     });
   })();
 

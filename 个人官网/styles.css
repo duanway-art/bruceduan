@@ -15,6 +15,7 @@
   --film: #15120F;
   --film-ink: #E9E1D0;
   --film-mark: #E8913A;
+  --sprocket: #F3EEE3;
   --texture-opacity: 0.45;
   --texture-blend: multiply;
 
@@ -38,6 +39,7 @@
     --cinnabar-ink: #1A1510;
     --tint: rgba(208, 86, 63, 0.09);
     --film: #0B0907;
+    --sprocket: #3E372E;
     --texture-opacity: 0.25;
     --texture-blend: screen;
     color-scheme: dark;
@@ -56,6 +58,7 @@
   --cinnabar-ink: #1A1510;
   --tint: rgba(208, 86, 63, 0.09);
   --film: #0B0907;
+  --sprocket: #3E372E;
   --texture-opacity: 0.25;
   --texture-blend: screen;
   color-scheme: dark;
@@ -437,6 +440,20 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .phone:hover { transform: translateY(-10px) scale(1.03); z-index: 2; }
 .phone:nth-child(2):hover { transform: translateY(-36px) scale(1.03); }
 
+.spread.is-shaking .phone { animation: jiggle .9s cubic-bezier(.36, .07, .19, .97) .25s both; }
+.spread.is-shaking .phone:nth-child(2) { animation-delay: .37s; }
+.spread.is-shaking .phone:nth-child(3) { animation-delay: .49s; }
+@keyframes jiggle {
+  0%   { rotate: 0deg; scale: 1; }
+  12%  { rotate: -6deg; scale: 1.04; }
+  26%  { rotate: 5deg; }
+  40%  { rotate: -3.5deg; }
+  54%  { rotate: 2.5deg; }
+  68%  { rotate: -1.2deg; }
+  82%  { rotate: .5deg; scale: 1; }
+  100% { rotate: 0deg; scale: 1; }
+}
+
 /* ---------- lightbox ---------- */
 .lightbox {
   position: fixed;
@@ -474,27 +491,32 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .section--strip .section__head { max-width: var(--wrap); margin-left: auto; margin-right: auto; padding: 0 32px; }
 
 .strip {
+  overflow: hidden;
+  background: var(--film);
+  cursor: default;
+}
+
+.strip__track {
   --hole: 14px;
   display: flex;
-  gap: 0;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-padding-inline: max(32px, calc((100% - var(--wrap)) / 2 + 32px)) 32px;
+  width: max-content;
   padding: 34px 0;
   background:
-    radial-gradient(circle at 50% 50%, var(--paper) 42%, transparent 44%) 0 9px / 26px var(--hole) repeat-x,
-    radial-gradient(circle at 50% 50%, var(--paper) 42%, transparent 44%) 0 calc(100% - 9px) / 26px var(--hole) repeat-x,
-    var(--film);
-  scrollbar-width: none;
-  cursor: grab;
+    radial-gradient(circle at 50% 50%, var(--sprocket) 42%, transparent 44%) 0 9px / 26px var(--hole) repeat-x,
+    radial-gradient(circle at 50% 50%, var(--sprocket) 42%, transparent 44%) 0 calc(100% - 9px) / 26px var(--hole) repeat-x;
+  animation: roll 56s linear infinite;
+  animation-play-state: paused;
+  will-change: transform;
 }
-.strip::-webkit-scrollbar { display: none; }
-.strip:active { cursor: grabbing; }
+.strip.is-playing .strip__track { animation-play-state: running; }
+.strip.is-playing:hover .strip__track,
+.strip.is-held .strip__track { animation-play-state: paused; }
+@keyframes roll { to { transform: translateX(-50%); } }
 
+/* frame width + margin is a multiple of the 26px sprocket pitch so the loop seam is invisible */
 .frame {
-  flex: 0 0 260px;
-  scroll-snap-align: start;
-  margin-left: 16px;
+  flex: 0 0 270px;
+  margin-right: 16px;
   padding: 24px 22px 22px;
   min-height: 230px;
   display: flex;
@@ -504,8 +526,6 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   border-radius: 3px;
   position: relative;
 }
-.frame:first-child { margin-left: max(32px, calc((100% - var(--wrap)) / 2 + 32px)); }
-.frame:last-child { margin-right: 32px; }
 .frame__no { font-family: var(--mono); font-size: 12px; color: var(--film-mark); letter-spacing: .12em; }
 .frame__no::before { content: "\25B8\00a0"; }
 .frame h4 { margin: auto 0 6px; font-size: 24px; font-weight: 600; }
@@ -678,8 +698,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   .section { padding: 100px 20px 0; }
   .section--strip { padding-left: 0; padding-right: 0; }
   .section--strip .section__head, .strip__hint { padding: 0 20px; }
-  .frame { flex-basis: 220px; }
-  .frame:first-child { margin-left: 20px; }
+  .frame { flex-basis: 218px; }
+  .strip__track { animation-duration: 44s; }
 
   .rules { grid-template-columns: 1fr; gap: 40px; }
 
@@ -706,6 +726,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .strip { overflow-x: auto; }
+  .strip__track { animation: none; }
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
   html { scroll-behavior: auto; }
   .js .reveal { opacity: 1; transform: none; }
