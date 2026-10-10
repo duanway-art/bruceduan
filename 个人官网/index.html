@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>nonoor · 一个人的 App 作坊</title>
+  <meta name="description" content="nonoor 作坊，独立 iOS 开发。时笺、敲了么、随礼记、电子衣橱、瓶瓶罐罐、胶片助手、Noor、藏书阁——把日子里细小的仪式，做成口袋里安静的工具。">
+  <meta name="theme-color" content="#F3EEE3" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#16130F" media="(prefers-color-scheme: dark)">
+  <meta property="og:title" content="nonoor · 一个人的 App 作坊">
+  <meta property="og:description" content="一个人，做一些安静的 App。">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    (function () {
+      document.documentElement.classList.add("js");
+      var t = localStorage.getItem("theme");
+      if (t) document.documentElement.dataset.theme = t;
+    })();
+  </script>
+</head>
+<body>
+  <div class="paper" aria-hidden="true"></div>
+
+  <header class="masthead">
+    <a class="brand" href="#top" aria-label="nonoor">
+      <span class="seal seal--sm">坊</span>
+      <span class="brand__name">nonoor</span>
+    </a>
+    <nav class="nav">
+      <a href="#works" data-i18n="nav.works">作品</a>
+      <a href="#craft" data-i18n="nav.craft">手艺</a>
+      <a href="#letter" data-i18n="nav.letter">来信</a>
+      <a href="#colophon" data-i18n="nav.contact">联系</a>
+    </nav>
+    <div class="toggles">
+      <button class="toggle" id="langToggle" type="button" aria-label="Switch language">EN</button>
+      <button class="toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"><span data-i18n="theme.night">夜</span></button>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ============ Hero ============ -->
+    <section class="hero">
+      <div class="hero__date" id="ganzhi" aria-hidden="true"></div>
+
+      <div class="hero__main">
+        <p class="eyebrow reveal" data-i18n="hero.eyebrow">独立 iOS 开发 · nonoor 作坊</p>
+        <h1 class="hero__title reveal" data-i18n-html="hero.title">一个人，<br>做一些<em>安静</em>的 App。</h1>
+        <p class="hero__lede reveal" data-i18n="hero.lede">写一封要等很久才能拆的信，敲一下口袋里的木鱼，竖着读一本古书，给胶片相机测一次光，记下谁的生日、谁的礼金。我把日子里这些细小的仪式，做成手机里的工具。</p>
+        <div class="hero__cta reveal">
+          <a class="btn btn--ink" href="#works" data-i18n="hero.cta">翻阅作品</a>
+          <a class="btn btn--line" href="mailto:duanwei@nonoor.com" data-i18n="hero.mail">写信给我</a>
+        </div>
+      </div>
+
+      <aside class="hero__side reveal" aria-hidden="true">
+        <p class="vertical" data-i18n="hero.vertical">慢工出细活　一人一作坊</p>
+      </aside>
+
+      <div class="fish" id="fish">
+        <button class="fish__btn" id="fishBtn" type="button" aria-label="敲木鱼">
+          <img src="assets/icons/moku.png" alt="" width="88" height="88">
+        </button>
+        <p class="fish__hint"><span data-i18n="fish.hint">敲一下</span> · <span data-i18n="fish.merit">功德</span> <b id="fishCount">0</b></p>
+      </div>
+    </section>
+
+    <!-- ============ Stats ============ -->
+    <section class="ledger" aria-label="Numbers">
+      <div class="ledger__item"><b data-count="7">7</b><span data-i18n="stat.live">款已上架</span></div>
+      <div class="ledger__item"><b data-count="1">1</b><span data-i18n="stat.wip">款即将刊行</span></div>
+      <div class="ledger__item"><b data-count="27">27</b><span data-i18n="stat.lang">种语言</span></div>
+      <div class="ledger__item"><b data-count="1">1</b><span data-i18n="stat.one">个人</span></div>
+    </section>
+
+    <!-- ============ Works ============ -->
+    <section class="section section--works" id="works">
+      <header class="section__head reveal">
+        <p class="vol" data-i18n="works.vol">卷一</p>
+        <h2 data-i18n="works.title">作品</h2>
+        <p class="section__sub" data-i18n="works.sub">八件作品，按开工先后排列。点截图可放大。</p>
+      </header>
+
+      <div class="spreads" id="spreads"></div>
+    </section>
+
+    <!-- ============ Film strip: how an app is made ============ -->
+    <section class="section section--strip" aria-labelledby="stripTitle">
+      <header class="section__head reveal">
+        <p class="vol" data-i18n="strip.vol">卷二</p>
+        <h2 id="stripTitle" data-i18n="strip.title">一个 App 的一卷胶片</h2>
+        <p class="section__sub" data-i18n="strip.sub">从一个念头到下一个版本，每次都这样走一遍。</p>
+      </header>
+      <div class="strip" id="strip" tabindex="0"></div>
+    </section>
+
+    <!-- ============ Craft ============ -->
+    <section class="section" id="craft">
+      <header class="section__head reveal">
+        <p class="vol" data-i18n="craft.vol">卷三</p>
+        <h2 data-i18n="craft.title">作坊规制</h2>
+        <p class="section__sub" data-i18n="craft.sub">六条给自己定的规矩。</p>
+      </header>
+      <ol class="rules" id="rules"></ol>
+    </section>
+
+    <!-- ============ Letter ============ -->
+    <section class="section section--letter" id="letter">
+      <header class="section__head reveal">
+        <p class="vol" data-i18n="letter.vol">卷四</p>
+        <h2 data-i18n="letter.title">一封给你的信</h2>
+        <p class="section__sub" data-i18n="letter.sub">学时笺的规矩：先封好，等你来拆。</p>
+      </header>
+
+      <div class="envelope" id="envelope">
+        <button class="envelope__closed" id="envelopeBtn" type="button">
+          <span class="envelope__flap" aria-hidden="true"></span>
+          <span class="envelope__to" data-i18n="letter.to">致 · 读到这里的你</span>
+          <span class="wax" aria-hidden="true">缄</span>
+          <span class="envelope__hint" data-i18n="letter.open">点击拆封</span>
+        </button>
+        <article class="letter" id="letterBody" hidden>
+          <p data-i18n="letter.p0">你好，</p>
+          <p data-i18n="letter.p1">谢谢你一路翻到这里。</p>
+          <p data-i18n="letter.p2">我做的 App 都很小：一封要等很久才能拆的信，一只敲了会响的木鱼，一本竖着读的古书。它们改变不了世界，只想在你某个安静的时刻，刚好有用。</p>
+          <p data-i18n="letter.p3">如果你用过其中某一个——喜欢也好，吐槽也好——都欢迎写信给我。每一封，我都会读。</p>
+          <p class="letter__sign"><span data-i18n="letter.sign">nonoor 作坊　丙午年秋</span><span class="seal seal--sm">坊</span></p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ Colophon ============ -->
+  <footer class="colophon" id="colophon">
+    <div class="colophon__box">
+      <p class="colophon__title" data-i18n="colo.title">版　权　页</p>
+      <dl>
+        <div><dt data-i18n="colo.studio">作坊</dt><dd>nonoor</dd></div>
+        <div><dt data-i18n="colo.stack">技术</dt><dd>SwiftUI</dd></div>
+        <div><dt data-i18n="colo.tools">工具</dt><dd>Xcode · Cursor · Stitch</dd></div>
+        <div><dt data-i18n="colo.mail">来信</dt><dd><a href="mailto:duanwei@nonoor.com">duanwei@nonoor.com</a></dd></div>
+      </dl>
+      <p class="colophon__note" data-i18n="colo.note">本页以宋体排印，以耐心装订。</p>
+      <p class="colophon__copy">© <span id="year">2026</span> nonoor.com</p>
+    </div>
+  </footer>
+
+  <div class="lightbox" id="lightbox" hidden>
+    <button class="lightbox__close" type="button" aria-label="Close">×</button>
+    <img class="lightbox__img" alt="">
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
