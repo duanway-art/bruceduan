@@ -49,7 +49,7 @@
       tags: { zh: ["纪念日", "农历生日", "人情往来"], en: ["Anniversaries", "Lunar birthdays", "Gift ledger"] }
     },
     {
-      id: "cangshuge", site: "https://cangshuge.nonoor.com", ver: "1.0.0", soon: true, shotLangs: ["zh"],
+      id: "cangshuge", store: "6820840209", site: "https://cangshuge.nonoor.com", ver: "1.1.1", shotLangs: ["zh"],
       name: { zh: "藏书阁", en: "Cangshuge" }, alt: { zh: "古籍阅读", en: "藏书阁" },
       pitch: {
         zh: "六十四部经史子集全部内置，纵排右起、乌丝界栏、朱点句读，生僻古字完整显示。",
